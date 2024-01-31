@@ -1,94 +1,177 @@
 # **PHASE-4-SUPERHEROES-CHALLENGE BY MASUD ABDI**
 #**Superheroes API**
-This is a simple Flask-based API for managing superheroes and their powers. The API allows you to create, read, update, and delete superheroes and their powers.
+For this assessment, you'll be working on an API for tracking heroes and their superpowers.
 
-**Getting Started**
-Clone the repository:
-bash
-Download
-Copy code
-git clone[ https://github.com/masud520/superheroes-api.git](https://github.com/masud520/PHASE-4-SUPERHEROES-CHALLENGE)
-cd superheroes-api
-Create a virtual environment and activate it:
-bash
-Download
-Copy code
-python3 -m venv venv
-source venv/bin/activate
-Install the dependencies:
-bash
-Download
-Copy code
-pip install -r requirements.txt
-Run the application:
-bash
-Download
-Copy code
-flask run
-Access the API at http://localhost:5000.
-##**API Documentation**
-1.**Heroes**
-GET /heroes
-Returns a list of all heroes.
+In this repo, there is a Flask application with some features built out. There is also a fully built React frontend application, so you can test if your API is working.
 
-GET /heroes/int:hero\_id
-Returns the hero with the given ID.
+Your job is to build out the Flask API to add the functionality described in the deliverables below.
 
-POST /heroes
-Creates a new hero. The request body should be a JSON object with the following properties:
+**Setup**
+To download the dependencies for the frontend and backend, run:
 
-name (string, required): The name of the hero.
-real_name (string, required): The real name of the hero.
-PUT /heroes/int:hero\_id
-Updates the hero with the given ID. The request body should be a JSON object with the following properties:
+pipenv install
+npm install --prefix client
+There is some starter code in the app/seed.py file so that once you've generated the models, you'll be able to create data to test your application.
 
-name (string, optional): The new name of the hero.
-real_name (string, optional): The new real name of the hero.
-DELETE /heroes/int:hero\_id
-Deletes the hero with the given ID.
+You can run your Flask API on localhost:5555 by running:
 
-2.**Powers**
-GET /powers
-Returns a list of all powers.
+python app.py
+You can run your React app on localhost:4000 by running:
 
-GET /powers/int:power\_id
-Returns the power with the given ID.
+npm start --prefix client
+You are not being assessed on React, and you don't have to update any of the React code; the frontend code is available just so that you can test out the behavior of your API in a realistic setting.
 
-POST /powers
-Creates a new power. The request body should be a JSON object with the following properties:
+There are also tests included which you can run using pytest -x to check your work.
 
-name (string, required): The name of the power.
-description (string, required): The description of the power.
-PUT /powers/int:power\_id
-Updates the power with the given ID. The request body should be a JSON object with the following properties:
+Depending on your preference, you can either check your progress by:
 
-name (string, optional): The new name of the power.
-description (string, optional): The new description of the power.
-DELETE /powers/int:power\_id
-Deletes the power with the given ID.
+Running pytest -x and seeing if your code passes the tests
+Running the React application in the browser and interacting with the API via the frontend
+Running the Flask server and using Postman to make requests
+**Models**
+You need to create the following relationships:
 
-Hero Powers
-POST /hero_powers
-Creates a new hero power. The request body should be a JSON object with the following properties:
+A Hero has many Powers through HeroPower
+A Power has many Heros through HeroPower
+A HeroPower belongs to a Hero and belongs to a Power
+Start by creating the models and migrations for the following database tables:
 
-hero_id (integer, required): The ID of the hero.
-power_id (integer, required): The ID of the power.
-strength (integer, required): The strength of the hero's power.
-Database Models
-The API uses three database models: Hero, Power, and HeroPower.
+domain diagram
 
-Hero
-id (integer, primary key): The ID of the hero.
-name (string): The name of the hero.
-real_name (string): The real name of the hero.
-Power
-id (integer, primary key): The ID of the power.
-name (string): The name of the power.
-description (string): The description of the power.
-HeroPower
-id (integer, primary key): The ID of the hero power.
-hero_id (integer, foreign key to Hero): The ID of the hero.
-power_id (integer, foreign key to Power): The ID of the power.
-strength (integer): The strength of the hero's power.
-###**AUTHOR**
+Add any code needed in the model files to establish the relationships.
+
+Then, run the migrations and seed file:
+
+flask db upgrade
+python app/seed.py
+If you aren't able to get the provided seed file working, you are welcome to generate your own seed data to test the application.
+
+**Validations**
+Add validations to the HeroPower model:
+
+strength must be one of the following values: 'Strong', 'Weak', 'Average'
+Add validations to the Power model:
+
+description must be present and at least 20 characters long
+Routes
+Set up the following routes. Make sure to return JSON data in the format specified along with the appropriate HTTP verb.
+
+**GET /heroes**
+Return JSON data in the format below:
+
+[
+  { "id": 1, "name": "Kamala Khan", "super_name": "Ms. Marvel" },
+  { "id": 2, "name": "Doreen Green", "super_name": "Squirrel Girl" },
+  { "id": 3, "name": "Gwen Stacy", "super_name": "Spider-Gwen" }
+]
+**GET /heroes/:id**
+If the Hero exists, return JSON data in the format below:
+
+{
+  "id": 1,
+  "name": "Kamala Khan",
+  "super_name": "Ms. Marvel",
+  "powers": [
+    {
+      "id": 1,
+      "name": "super strength",
+      "description": "gives the wielder super-human strengths"
+    },
+    {
+      "id": 2,
+      "name": "flight",
+      "description": "gives the wielder the ability to fly through the skies at supersonic speed"
+    }
+  ]
+}
+If the Hero does not exist, return the following JSON data, along with the appropriate HTTP status code:
+
+{
+  "error": "Hero not found"
+}
+**GET /powers**
+Return JSON data in the format below:
+
+[
+  {
+    "id": 1,
+    "name": "super strength",
+    "description": "gives the wielder super-human strengths"
+  },
+  {
+    "id": 1,
+    "name": "flight",
+    "description": "gives the wielder the ability to fly through the skies at supersonic speed"
+  }
+]
+**GET /powers/:id**
+If the Power exists, return JSON data in the format below:
+
+{
+  "id": 1,
+  "name": "super strength",
+  "description": "gives the wielder super-human strengths"
+}
+If the Power does not exist, return the following JSON data, along with the appropriate HTTP status code:
+
+{
+  "error": "Power not found"
+}
+PATCH /powers/:id
+This route should update an existing Power. It should accept an object with the following properties in the body of the request:
+
+{
+  "description": "Updated description"
+}
+If the Power exists and is updated successfully (passes validations), update its description and return JSON data in the format below:
+
+{
+  "id": 1,
+  "name": "super strength",
+  "description": "Updated description"
+}
+If the Power does not exist, return the following JSON data, along with the appropriate HTTP status code:
+
+{
+  "error": "Power not found"
+}
+If the Power is not updated successfully (does not pass validations), return the following JSON data, along with the appropriate HTTP status code:
+
+{
+  "errors": ["validation errors"]
+}
+**POST /hero_powers**
+This route should create a new HeroPower that is associated with an existing Power and Hero. It should accept an object with the following properties in the body of the request:
+
+{
+  "strength": "Average",
+  "power_id": 1,
+  "hero_id": 3
+}
+If the HeroPower is created successfully, send back a response with the data related to the Hero:
+
+{
+  "id": 1,
+  "name": "Kamala Khan",
+  "super_name": "Ms. Marvel",
+  "powers": [
+    {
+      "id": 1,
+      "name": "super strength",
+      "description": "gives the wielder super-human strengths"
+    },
+    {
+      "id": 2,
+      "name": "flight",
+      "description": "gives the wielder the ability to fly through the skies at supersonic speed"
+    }
+  ]
+}
+If the HeroPower is not created successfully, return the following JSON data, along with the appropriate HTTP status code:
+
+{
+  "errors": ["validation errors"]
+}
+
+##**AUTHOR**
 **MASUD ABDI**
