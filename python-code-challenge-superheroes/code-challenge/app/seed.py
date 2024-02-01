@@ -1,19 +1,29 @@
-from models import db, Power, Hero, HeroPower
-import random
+#!/usr/bin/env python3
 
-def seed_powers():
-    print("🦸‍♀️ Seeding powers...")
+from app import app, db
+from models import Hero, Power, HeroPower
+import random 
+from sqlalchemy import func 
+
+with app.app_context():
+    # Delete existing data
+    HeroPower.query.delete()
+    Hero.query.delete()
+    Power.query.delete()
+
+    # Powers
     powers_data = [
         {"name": "super strength", "description": "gives the wielder super-human strengths"},
         {"name": "flight", "description": "gives the wielder the ability to fly through the skies at supersonic speed"},
         {"name": "super human senses", "description": "allows the wielder to use her senses at a super-human level"},
         {"name": "elasticity", "description": "can stretch the human body to extreme lengths"}
     ]
-    powers = Power.create_all(powers_data)
-    print("🦸‍♀️ Done seeding powers!")
 
-def seed_heroes():
-    print("🦸‍♀️ Seeding heroes...")
+    for power_info in powers_data:
+        power = Power(**power_info)
+        db.session.add(power)
+
+    #  Heroes
     heroes_data = [
         {"name": "Kamala Khan", "super_name": "Ms. Marvel"},
         {"name": "Doreen Green", "super_name": "Squirrel Girl"},
@@ -26,26 +36,24 @@ def seed_heroes():
         {"name": "Kitty Pryde", "super_name": "Shadowcat"},
         {"name": "Elektra Natchios", "super_name": "Elektra"}
     ]
-    heroes = Hero.create_all(heroes_data)
-    print("🦸‍♀️ Done seeding heroes!")
 
-def add_powers_to_heroes():
-    print("🦸‍♀️ Adding powers to heroes...")
-    strengths = ["Strong", "Weak", "Average"]
-    heroes = Hero.query.all()
+    for hero_info in heroes_data:
+        hero = Hero(**hero_info)
+        db.session.add(hero)
+
     
-    for hero in heroes:
+    db.session.commit()
+
+    # Adding Powers to Heroes
+    strengths = ["Strong", "Weak", "Average"]
+
+    for hero in Hero.query.all():
         for _ in range(random.randint(1, 3)):
-            power = Power.query.get(random.choice(Power.query.with_entities(Power.id).all()))
-            HeroPower.create(hero=hero, power=power, strength=random.choice(strengths))
-    print("🦸‍♀️ Done adding powers to heroes!")
+            power = Power.query.order_by(func.random()).first()  # Randomly select a power
+            hero_power = HeroPower(hero_id=hero.id, power_id=power.id, strength=random.choice(strengths))
+            db.session.add(hero_power)
 
-def seed_database():
-    seed_powers()
-    seed_heroes()
-    add_powers_to_heroes()
-    print("🦸‍♀️ Done seeding!")
+   
+    db.session.commit()
 
-if __name__ == "__main__":
-    seed_database()
-
+   
